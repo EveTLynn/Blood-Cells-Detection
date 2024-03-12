@@ -261,12 +261,30 @@ def augment_images(input_path: str, output_path: str, num_augmentations=3) -> No
     img = cv2.imread(os.path.join(input_path, 'images', image))
     label_path = os.path.join(input_path, 'annotations', f'{image.split(".")[0]}.xml')
 
-    # if the annotations exist
+    # if the annotations exist check the validity of the coordinates
     if os.path.exists(label_path):
       # parse the annotations to get the coordinates and labels
       xml_df = create_image_df(label_path)
-      bboxes = xml_df.iloc[:, -4:].values
-      class_labels = xml_df["class"].to_list()
+
+      # Filter invalid bounding boxes during parsing (replace with your specific checks)
+      valid_bboxes = []
+      valid_labels = []
+      for idx, row in xml_df.iterrows():
+          bbox = row.iloc[-4:].tolist()  # Assuming coordinates are the last 4 columns
+          if (len(bbox) != 4 or  # Ensure 4 coordinates
+              not all(isinstance(val, (int, float)) for val in bbox) or  # Check data types
+              any(np.isnan(bbox)) or  # Check for NaNs
+              bbox[2] <= bbox[0] or   # Check x_max > x_min (assuming x is at index 0 and 2)
+              bbox[3] <= bbox[1]):    # Check y_max > y_min (assuming y is at index 1 and 3)
+              print(f"Skipping invalid bbox: {bbox} for image: {image_name}.")
+              continue  # Skip to the next row in the DataFrame
+
+          valid_bboxes.append(bbox)
+          valid_labels.append(row["class"])  
+      
+      # Use the filtered bounding boxes and labels for augmentation
+      bboxes = valid_bboxes
+      class_labels = valid_labels
 
       # Generate and save augmented images and annotations
       for x in range(num_augmentations):
