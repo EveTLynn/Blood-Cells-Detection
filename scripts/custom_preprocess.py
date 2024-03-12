@@ -277,7 +277,7 @@ def augment_images(input_path: str, output_path: str, num_augmentations=3) -> No
               any(np.isnan(bbox)) or  # Check for NaNs
               bbox[2] <= bbox[0] or   # Check x_max > x_min (assuming x is at index 0 and 2)
               bbox[3] <= bbox[1]):    # Check y_max > y_min (assuming y is at index 1 and 3)
-              print(f"Skipping invalid bbox: {bbox} for image: {image_name}.")
+              print(f"Skipping invalid bbox: {bbox} for image: {xml_df.iloc[idx, 0]}.")
               continue  # Skip to the next row in the DataFrame
 
           valid_bboxes.append(bbox)
