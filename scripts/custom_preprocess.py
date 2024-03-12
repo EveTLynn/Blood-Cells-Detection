@@ -182,7 +182,7 @@ def write_xml_annotation(folder_path: str, image_name: str, width: int, height: 
   ET.SubElement(annotation, "filename").text = f"{image_name}.jpg"
 
   # Sub-elements for source information (replace with your dataset details)
-  source = ET.SubElement(annotation, "https://github.com/Shenggan/BCCD_Dataset")
+  source = ET.SubElement(annotation, "source")
   ET.SubElement(source, "database").text = "BCCD_augmented"  
   ET.SubElement(source, "annotation").text = "Object Detection"
 
