@@ -13,6 +13,7 @@ import os
 import glob
 import shutil
 import pandas as pd
+import random
 import cv2
 import xml.etree.ElementTree as ET
 import albumentations as alb
