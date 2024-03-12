@@ -19,21 +19,25 @@ import xml.etree.ElementTree as ET
 import albumentations as alb
 
 
-def split_images(images_path, train_images_folder, val_images_folder, test_images_folder,
-                 train_size=0.85, val_size=0.1, test_size=0.05):
-
+def split_images(images_path: str, train_images_folder: str, val_images_folder: str, test_images_folder: str,
+                train_size: float = 0.85, val_size: float = 0.1, test_size: float = 0.05) -> None:
   """
-  Splits a folder of images into training, validation, and test sets.
+  Splits a folder of images into training, validation, and test sets based on user-specified proportions.
+
+  This function takes a directory containing images and splits them into three separate folders
+  for training, validation, and testing purposes. The user can define the desired proportions
+  for each set using the `train_size`, `val_size`, and `test_size` parameters.
 
   Args:
-      images_path (str): Path to the folder containing the images.
+      images_path (str): Path to the folder containing the original images.
       train_images_folder (str): Path to the folder where the training images will be saved.
       val_images_folder (str): Path to the folder where the validation images will be saved.
       test_images_folder (str): Path to the folder where the test images will be saved.
-      train_size (float): The proportion of the dataset to include in the training set.
-      val_size (float): The proportion of the dataset to include in the validation set.
-      test_size (float): The proportion of the dataset to include in the test set.
+      train_size (float, optional): Proportion of the dataset for the training set (defaults to 0.85).
+      val_size (float, optional): Proportion of the dataset for the validation set (defaults to 0.1).
+      test_size (float, optional): Proportion of the dataset for the test set (defaults to 0.05).
   """
+
   # Create a list of image filenames in 'images_path'
   image_extensions = ['.jpg', '.jpeg', '.png', '.bmp']   #  a list of image extensions
   imgs_list = [filename for filename in os.listdir(images_path) if os.path.splitext(filename)[-1] in image_extensions]
@@ -44,7 +48,7 @@ def split_images(images_path, train_images_folder, val_images_folder, test_image
   # Shuffle the list of image filenames
   random.shuffle(imgs_list)
 
-  # determine the number of images for each set
+  # Calculate the number of images for each set based on proportions
   train_size = int(len(imgs_list) * 0.85)
   val_size = int(len(imgs_list) * 0.10)
   test_size = int(len(imgs_list) * 0.05)
@@ -52,6 +56,7 @@ def split_images(images_path, train_images_folder, val_images_folder, test_image
 
   # Copy image files to destination folders
   for i, f in enumerate(imgs_list):
+    # Determine destination folder based on index
       if i < train_size:
           dest_folder = train_images_folder
       elif i < train_size + val_size:
@@ -61,140 +66,194 @@ def split_images(images_path, train_images_folder, val_images_folder, test_image
       shutil.copy(os.path.join(images_path, f), os.path.join(dest_folder, f))
 
 
-def create_filenamelist_and_move_annotations(image_folder, output_file_name, annotation_folder):
+def create_filenamelist_and_move_annotations(image_folder: str, output_file_name: str,
+                                             input_path: str, output_path: str) -> None:
   """
   Creates a text file containing a list of image filenames (without extensions) and
-  copies corresponding XML annotation files to a specified output folder.
+  moves corresponding XML annotation files from the input path to the output path.
+
+  This function processes a directory containing image files (`.jpg` extension assumed),
+  generates a text file listing the image filenames, and moves any corresponding XML
+  annotation files (with the same base filename as the image) from a specified input
+  directory to a specified output directory.
 
   Args:
       image_folder (str): Path to the folder containing the image files.
       output_file_name (str): Name of the text file to create, containing image filenames.
-      annotation_folder (str): Path to the folder containing the XML annotation files.
+      input_path (str): Path to the directory containing the XML annotation files.
+      output_path (str): Path to the directory where the XML annotation files will be moved.
   """
+
+
   # Get a list of all the image files in the directory
   files = os.listdir(image_folder)
 
   # Get a list of image file names (without extensions)
   image_files = [os.path.splitext(file)[0] for file in os.listdir(image_folder) if file.lower().endswith('.jpg')]
 
-  # Write the file names to a text file
+  # Write the file names to the text file
   with open(output_file_name, 'w') as f:
       for image_name in image_files:
           f.write(image_name + '\n')
           # Match XML files with corresponding image names
-          xml_file = os.path.join(annotation_path, f'{image_name}.xml')
+          xml_file = os.path.join(input_path, f'{image_name}.xml')
           if os.path.exists(xml_file):
               # Move the matched XML file to the output folder
-              shutil.copy(xml_file, os.path.join(annotation_folder, f'{image_name}.xml'))
+              shutil.copy(xml_file, os.path.join(output_path, f'{image_name}.xml'))
+
+  # Note: Using shutil.move instead of shutil.copy above would permanently remove
+  # the files from the input_path directory. If you don't want to remove them,
+  # keep the code as shutil.copy(xml_file, ...)
 
 
-def create_image_df(label_path):
+def create_image_df(label_path: str) -> pd.DataFrame:
   """
   Parses a PASCAL VOC formatted XML annotation file and creates a Pandas DataFrame.
 
   Args:
       label_path (str): Path to the XML annotation file.
+
   Returns:
-      pandas.DataFrame: A DataFrame containing image metadata and bounding box information.
+      pd.DataFrame: A DataFrame containing image metadata (filename, width, height)
+       and bounding box information (class, xmin, ymin, xmax, ymax).
+
+  Raises:
+      FileNotFoundError: If the specified XML file is not found.
+      RuntimeError: If the XML file structure is not compatible with PASCAL VOC format.
   """
 
+  # Check if the XML file exists
+  if not os.path.exists(label_path):
+    raise FileNotFoundError(f"XML annotation file not found at: {label_path}")
+
   xml_list = []
-  tree = ET.parse(label_path)
-  root = tree.getroot()
-  for member in root.findall('object'):
-    value = (root.find('filename').text ,
-             int(root.find('size')[0].text),
-             int(root.find('size')[1].text),
-             member[0].text,
-             int(member[4][0].text),
-             int(member[4][1].text),
-             int(member[4][2].text),
-             int(member[4][3].text)
-             )
-    xml_list.append(value)
-  column_name = ['filename', 'width', 'height', 'class', 'xmin', 'ymin', 'xmax', 'ymax']
-  xml_df = pd.DataFrame(xml_list, columns=column_name)
+
+  try:
+    # Parse the XML file
+    tree = ET.parse(label_path)
+    root = tree.getroot()
+
+    # Extract information for each object element
+    for member in root.findall('object'):
+      # Extract filename, width, height, class name, and bounding box coordinates
+      value = (
+          root.find('filename').text,
+          int(root.find('size')[0].text),  # Image width
+          int(root.find('size')[1].text),  # Image height
+          member[0].text,                  # Object class
+          int(member[4][0].text),  # xmin
+          int(member[4][1].text),  # ymin
+          int(member[4][2].text),  # xmax
+          int(member[4][3].text)   # ymax
+      )
+      xml_list.append(value)
+
+  except ET.ParseError as e:
+    raise RuntimeError(f"Invalid XML file structure: {e}")
+
+  column_names = ['filename', 'width', 'height', 'class', 'xmin', 'ymin', 'xmax', 'ymax']
+  xml_df = pd.DataFrame(xml_list, columns=column_names)
+
   return xml_df
 
 
-def write_xml_annotation(folder_path, image_name, width, height, bboxes, class_labels):
+def write_xml_annotation(folder_path: str, image_name: str, width: int, height: int,
+                         bboxes: list[list], class_labels: list[str]) -> None:
   """
-  Writes an XML annotation file for a single image in PASCAL VOC format.
+  Creates and saves an XML annotation file in PASCAL VOC format for a single image.
+
+  This function takes information about an image (filename, dimensions) and a list of
+  bounding boxes (coordinates and class labels) to generate an XML annotation file
+  adhering to the PASCAL VOC format. The file is saved in the specified folder.
 
   Args:
       folder_path (str): Path to the folder where the XML file will be saved.
       image_name (str): Name of the image file (without extension).
       width (int): Width of the image in pixels.
       height (int): Height of the image in pixels.
-      bboxes (list of lists): List of bounding boxes in Pascal VOC format (x_min, y_min, x_max, y_max).
+      bboxes (list of list): List of bounding boxes in Pascal VOC format ([[x_min, y_min, x_max, y_max]]).
       class_labels (list of str): List of class labels for each bounding box.
   """
 
+  # Create the root element for the XML annotation
   annotation = ET.Element("annotation")
+  # Sub-element for filename with proper extension
   ET.SubElement(annotation, "filename").text = f"{image_name}.jpg"
 
-  source = ET.SubElement(annotation, "source")
-  ET.SubElement(source, "database").text = "BCCD_augmented"  # Replace with your dataset name
+  # Sub-elements for source information (replace with your dataset details)
+  source = ET.SubElement(annotation, "https://github.com/Shenggan/BCCD_Dataset")
+  ET.SubElement(source, "database").text = "BCCD_augmented"  
   ET.SubElement(source, "annotation").text = "Object Detection"
 
+  # Sub-element for image size
   size = ET.SubElement(annotation, "size")
   ET.SubElement(size, "width").text = str(width)
   ET.SubElement(size, "height").text = str(height)
   ET.SubElement(size, "depth").text = str(3)  # Assuming RGB image (3 channels)
 
+  # Create object elements and bounding boxes for each entry in the lists
   for bbox, class_label in zip(bboxes, class_labels):
     obj = ET.SubElement(annotation, "object")
     ET.SubElement(obj, "name").text = class_label
     ET.SubElement(obj, "pose").text = "Unspecified"
 
-    # No need to convert coordinates since they're already in pixels (Pascal VOC format)
+    # Extract bounding box coordinates (assuming already in PASCAL VOC format)
     x_min, y_min, x_max, y_max = bbox
 
+    # Sub-element for bounding box details
     bndbox = ET.SubElement(obj, "bndbox")
     ET.SubElement(bndbox, "xmin").text = str(int(x_min))
     ET.SubElement(bndbox, "ymin").text = str(int(y_min))
     ET.SubElement(bndbox, "xmax").text = str(int(x_max))
     ET.SubElement(bndbox, "ymax").text = str(int(y_max))
 
+  # Create the XML tree structure
   tree = ET.ElementTree(annotation)
 
   # Create the folder path if it doesn't exist
   os.makedirs(folder_path, exist_ok=True)
+  # Create the complete file path with extension
   xml_file_path = os.path.join(folder_path, f"{image_name}.xml")
 
+  # Write the XML tree to the file with UTF-8 encoding
   with open(xml_file_path, "wb") as f:
     tree.write(f, encoding="utf-8")
 
 
-def augment_images(input_path, output_path, num_augmentations=3):
+def augment_images(input_path: str, output_path: str, num_augmentations=3) -> None:
   """
   Augments images in a directory and creates corresponding bounding box annotations.
 
   This function reads images and their associated bounding box annotations (in PASCAL VOC format)
-  from a specified input directory. It then applies a series of image augmentation techniques
-  defined by an Albumentations augmentation pipeline. For each image, the function creates
-  `num_augmentations` augmented versions and saves them along with their corresponding
-  augmented bounding boxes to the specified output directory.
+  from a specified directory. It then applies a series of image augmentation techniques defined
+  by an Albumentations augmentation pipeline. For each image-annotation pair, the function creates
+  `num_augmentations` augmented versions and saves them along with their corresponding augmented
+  bounding boxes to the specified output directory. The directory structure will mirror the input.
+
+  **Input Directory Structure:**
+    input_path/
+    - images/ (folder containing original images)
+    - annotations/ (folder containing PASCAL VOC format annotation files)
+
+  **Output Directory Structure:**
+    output_path/
+    - images/ (folder containing augmented images)
+    - annotations/ (folder containing augmented annotation files)
 
   Args:
-      input_path (str): Path to the directory containing the original images and annotations.
-          The directory structure should be:
-          - input_path/
-              - images/ (folder containing original images)
-              - annotations/ (folder containing PASCAL VOC format annotation files)
-      output_path (str): Path to the directory where the augmented images and annotations will be saved.
-          The same directory structure as the input will be created here.
-      num_augmentations (int, optional): The number of augmented versions to create for each image. Defaults to 3.
+    input_path (str): Path to the directory containing the original images and annotations.
+    output_path (str): Path to the directory where the augmented images and annotations will be saved.
+    num_augmentations (int, optional): The number of augmented versions to create for each image. Defaults to 3.
   """
 
-  # TODO: Add args for custom augmentation
-  # Specify the hyperparameters for augmentation using Albumentations
-  augmentor = alb.Compose([alb.RandomCrop(width=480, height=480),
-                           alb.HorizontalFlip(p=0.5),
-                           alb.RandomBrightnessContrast(p=0.2),
-                           alb.RandomGamma(p=0.2),
-                           alb.RGBShift(p=0.2),
-                           alb.VerticalFlip(p=0.5)],
+  # TODO: Allow customization of augmentation parameters through arguments
+  # Define Albumentations augmentation pipeline (adjust hyperparameters as needed)
+  augmentor = alb.Compose([alb.RandomCrop(width=480, height=480),   # Adjust crop size
+                           alb.HorizontalFlip(p=0.5),               # Flips images horizontally with 50% probability
+                           alb.RandomBrightnessContrast(p=0.2),     # Adjust brightness/contrast randomly
+                           alb.RandomGamma(p=0.2),                  # Adjust gamma values
+                           alb.RGBShift(p=0.2),                     # Shift RGB channels randomly
+                           alb.VerticalFlip(p=0.5)],                # Flips images vertically with 50% probability
                            bbox_params=alb.BboxParams(format='pascal_voc', label_fields=['class_labels']))
 
   # Process each image in the input directory
@@ -209,18 +268,18 @@ def augment_images(input_path, output_path, num_augmentations=3):
       bboxes = xml_df.iloc[:, -4:].values
       class_labels = xml_df["class"].to_list()
 
-      # # Generate and save augmented images and annotations
+      # Generate and save augmented images and annotations
       for x in range(num_augmentations):
         # run through the augmentation pipline
         augmented = augmentor(image=img, bboxes=bboxes, class_labels=class_labels)
 
-        # save the image to desninated folder
+        # # Save augmented image to desninated folder
         os.makedirs(os.path.join(output_path,'images'), exist_ok=True)
         image_name = f'{image.split(".")[0]}_{x}'
         image_file_path = os.path.join(output_path, 'images', f"{image_name}.jpg")
         cv2.imwrite(image_file_path, augmented['image'])
 
-        # write annotations to desninated folder
+        # write augmented annotations to desninated folder
         xml_path = os.path.join(output_path, 'annotations')
         write_xml_annotation(folder_path = xml_path, image_name = f'{image.split(".")[0]}_{x}', # no idea why image_name=image_name wasn't working
                              width = 480, height = 480,
