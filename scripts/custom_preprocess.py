@@ -294,13 +294,13 @@ def augment_images(input_path: str, output_path: str, num_augmentations=3) -> No
 
         # # Save augmented image to desninated folder
         os.makedirs(os.path.join(output_path,'images'), exist_ok=True)
-        image_name = f'{image.split(".")[0]}_{x}'
+        image_name = f'{image.split(".")[0]}{x}'
         image_file_path = os.path.join(output_path, 'images', f"{image_name}.jpg")
         cv2.imwrite(image_file_path, augmented['image'])
 
         # write augmented annotations to desninated folder
         xml_path = os.path.join(output_path, 'annotations')
-        write_xml_annotation(folder_path = xml_path, image_name = f'{image.split(".")[0]}_{x}', # no idea why image_name=image_name wasn't working
+        write_xml_annotation(folder_path = xml_path, image_name = image_name, # no idea why image_name=image_name wasn't working
                              width = 480, height = 480,
                              bboxes = augmented["bboxes"], class_labels = augmented["class_labels"])
 
