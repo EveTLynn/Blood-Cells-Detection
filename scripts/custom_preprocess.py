@@ -255,7 +255,9 @@ def augment_images(input_path: str, output_path: str, num_augmentations=3) -> No
                            alb.RandomGamma(p=0.2),                  # Adjust gamma values
                            alb.RGBShift(p=0.2),                     # Shift RGB channels randomly
                            alb.VerticalFlip(p=0.5)],                # Flips images vertically with 50% probability
-                           bbox_params=alb.BboxParams(format='pascal_voc', label_fields=['class_labels']))
+                           bbox_params=alb.BboxParams(format='pascal_voc', 
+                                                      min_visibility=0.5,  # drop if new bbox is less than 50% visible
+                                                      label_fields=['class_labels']))
 
   # Process each image in the input directory
   for image in os.listdir(os.path.join(input_path, 'images')):
