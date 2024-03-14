@@ -221,7 +221,12 @@ def write_xml_annotation(folder_path: str, image_name: str, width: int, height: 
     tree.write(f, encoding="utf-8")
 
 
-def augment_images(input_path: str, output_path: str, num_augmentations=3) -> None:
+def augment_images(input_path: str,
+                   output_path: str,
+                   num_augmentations: int = 3,
+                   aug_width: int = 256,
+                   aug_height: int = 256,
+                   ) -> None:
   """
   Augments images in a directory and creates corresponding bounding box annotations.
 
@@ -245,17 +250,19 @@ def augment_images(input_path: str, output_path: str, num_augmentations=3) -> No
     input_path (str): Path to the directory containing the original images and annotations.
     output_path (str): Path to the directory where the augmented images and annotations will be saved.
     num_augmentations (int, optional): The number of augmented versions to create for each image. Defaults to 3.
+    ug_width (int, optional): Target width for resizing augmented images. Defaults to 256.
+    aug_height (int, optional): Target height for resizing augmented images. Defaults to 256.
   """
 
   # TODO: Allow customization of augmentation parameters through arguments
   # Define Albumentations augmentation pipeline (adjust hyperparameters as needed)
-  augmentor = alb.Compose([alb.RandomCrop(width=480, height=480),   # Adjust crop size
+  augmentor = alb.Compose([alb.RandomCrop(width=aug_width, height=aug_height),   # Adjust crop size
                            alb.HorizontalFlip(p=0.5),               # Flips images horizontally with 50% probability
                            alb.RandomBrightnessContrast(p=0.2),     # Adjust brightness/contrast randomly
                            alb.RandomGamma(p=0.2),                  # Adjust gamma values
                            alb.RGBShift(p=0.2),                     # Shift RGB channels randomly
                            alb.VerticalFlip(p=0.5)],                # Flips images vertically with 50% probability
-                           bbox_params=alb.BboxParams(format='pascal_voc', 
+                           bbox_params=alb.BboxParams(format='pascal_voc',
                                                       min_visibility=0.5,  # drop if new bbox is less than 50% visible
                                                       label_fields=['class_labels']))
 
@@ -302,8 +309,8 @@ def augment_images(input_path: str, output_path: str, num_augmentations=3) -> No
 
         # write augmented annotations to desninated folder
         xml_path = os.path.join(output_path, 'annotations')
-        write_xml_annotation(folder_path = xml_path, image_name = image_name, # no idea why image_name=image_name wasn't working
-                             width = 480, height = 480,
+        write_xml_annotation(folder_path = xml_path, image_name = image_name, 
+                             width = aug_height, height = aug_height,
                              bboxes = augmented["bboxes"], class_labels = augmented["class_labels"])
 
   # Genrate a text file with all the image names (without the extension) for voc2coco script
