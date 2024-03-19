@@ -42,7 +42,7 @@ Blood-Cells-Detection
 ### 2. Model Configuration
 Leverage the TFM package to access the pre-trained RetinaNet model with a ResNet-50 backbone.
 - Adjust the model, dataset and trainer configuration, including:
-  - Get the pretrained checkpoint from [TFM official vison model github](https://github.com/tensorflow/models/blob/master/official/vision/MODEL_GARDEN.md)
+  - Get the pretrained checkpoint from [TFM official vision model github](https://github.com/tensorflow/models/blob/master/official/vision/MODEL_GARDEN.md)
   - Adjust the model and dataset configurations (initiate checkpoint, freeze backbone, define input...)
   - Adjust the trainer configuration (train - val steps, optimizer, saving checkpoints..)
 - Set up the distribution stratergy takes full advantage of available hardware
@@ -64,6 +64,7 @@ retina_resnetfpn_coco
 
 Since the augmentation is random, the results from each run will be different. I find that the mAP and validation loss won't improve much or not at all after around 5000 epochs.
 The best mAP is around 52%-58%
+
 TODO: Add some images of training results
 
 ### 4. Inference:
