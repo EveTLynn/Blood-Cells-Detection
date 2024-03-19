@@ -65,6 +65,13 @@ TODO: add images of the training
 - The model will output bounding boxes and class labels for identified cells with the counting for each blood cells type.
 
 TODO: add some inference results
+![](results/test_gt.png)  |
+:-------------------------:
+Visualization of groundtruth bounding boxes
+
+![](results/test_pred.png)|
+:-------------------------:
+Visualization of predicted bounding boxes
 
 **I'm Always Learning!**
 
