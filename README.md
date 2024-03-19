@@ -57,8 +57,6 @@ Leverage the TFM package to access the pre-trained RetinaNet model with a ResNet
 Since the augmentation is random, the results from each run will be different. I find that the mAP and validation loss won't improve much or not at all after around 5000 epochs.
 The best mAP is around 52%-58%
 
-TODO: add images of the training
-
 ### 4. Inference:
 - Load the trained model weights.
 - Apply the model to detect blood cells in new, unseen images.
