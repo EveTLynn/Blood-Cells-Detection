@@ -54,15 +54,23 @@ Leverage the TFM package to access the pre-trained RetinaNet model with a ResNet
 - Evaluate the model's performance on a held-out validation set using mean Average Precision (mAP)
 - Export the model with the highest mAP
 
+Here is the output directory tree
+```
+TODO: draw this
+retina_resnetfpn_coco
+├── base-ckpt                    # 
+
+```
+
 Since the augmentation is random, the results from each run will be different. I find that the mAP and validation loss won't improve much or not at all after around 5000 epochs.
 The best mAP is around 52%-58%
+TODO: Add some images of training results
 
 ### 4. Inference:
 - Load the trained model weights.
 - Apply the model to detect blood cells in new, unseen images.
 - The model will output bounding boxes and class labels for identified cells with the counting for each blood cells type.
 
-TODO: add some inference results
 ![](results/test_gt.png)  |
 :-------------------------:
 Visualization of groundtruth bounding boxes
