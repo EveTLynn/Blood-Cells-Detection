@@ -43,33 +43,40 @@ Blood-Cells-Detection
 Leverage the TFM package to access the pre-trained RetinaNet model with a ResNet-50 backbone.
 - Adjust the model, dataset and trainer configuration, including:
   - Get the pretrained checkpoint from [TFM official vision model github](https://github.com/tensorflow/models/blob/master/official/vision/MODEL_GARDEN.md)
-  - Adjust the model and dataset configurations (initiate checkpoint, freeze backbone, define input...)
+  - Adjust the model and dataset configurations
+    - Backbone: initiate pretrained checkpoint, freeze backbone (keep the backbone's weight from being updated)
+    - Define image size, number of class, input paths (train and validation)
   - Adjust the trainer configuration (train - val steps, optimizer, saving checkpoints..)
 - Set up the distribution stratergy takes full advantage of available hardware
 - Create the Task object: an easy way to build, train, and evaluate models 
 
 ### 3. Training and Evaluation
 - Train the fine-tuned model on the prepared TFRecord data.
-- Monitor training progress using TensorBoard.
-- Evaluate the model's performance on a held-out validation set using mean Average Precision (mAP)
-- Export the model with the highest mAP
+- Monitor training progress using TensorBoard: the Tensorboard read `events.out.tfevents` and visualize as charts, graphs, and images which can help us understand how the model is performing during training and diagnose any issues.
+- Evaluate the model's performance on a held-out validation set using [COCO detection evaluation metrics](https://cocodataset.org/#detection-eval), but as TF allow to export best model based on only one metric, I chose mean average precision for simplicity.
+- 5 newest models are saved by default and I also keep the model with the highest mAP (this will be used for inference later)
 
 Here is the output directory tree
 ```
-TODO: draw this
 retina_resnetfpn_coco
-├── base-ckpt                    # 
-
+├── base_ckpt                          # Contains pretrained checkpoint from TFM
+├── trained_model
+│  ├── best_checkpoints                # Checkpoint with the highest mAP
+│  ├── train                           # Contains train tfevent file for Tensorboard
+│  ├── val                             # Contains validation tfevent file for Tensorboard
+│  ├── ckpt-100.data-00000-of-00000    # 5 newest checkpoints 
+│  └── ckpt-100.index
+└── exported_model                     # Stores exported model used for inference
 ```
 
-Since the augmentation is random, the results from each run will be different. I find that the mAP and validation loss won't improve much or not at all after around 5000 epochs.
+Since the augmentation is random, the results from each run will be different. I find that the mAP and validation loss won't improve much or not at all after around 4000 epochs.
 The best mAP is around 52%-58%
 
 TODO: Add some images of training results
 
 ### 4. Inference:
 - Load the trained model weights.
-- Apply the model to detect blood cells in new, unseen images.
+- Apply the model to detect blood cells in new, unseen images. 
 - The model will output bounding boxes and class labels for identified cells with the counting for each blood cells type.
 
 ![](results/test_gt.png)  |
@@ -80,6 +87,13 @@ Visualization of groundtruth bounding boxes
 :-------------------------:
 Visualization of predicted bounding boxes
 
-**I'm Always Learning!**
+The model actually detects the blood cells accurately despite not having very good mAP!   
 
-This repository is a work in progress, and I welcome your contributions! If you have any suggestions for improvement, feel free to open an issue or submit a pull request. I'm always looking for ways to enhance this project and make it more valuable for the community. 
+<!---
+**PS:** This project has been an incredible learning journey, and I couldn't have made it without the amazing Ms. Tyna as my mentor from the PyLadies Vienna program! 
+Huge thanks for all the support and guidance!
+-->
+
+**PS: I'm Always Learning!**
+
+This repository is a work in progress, and I welcome your contributions! If you have any suggestions for improvement, feel free to open an issue or submit a pull request. I'm always looking for ways to enhance this project and make it more valuable for the community.
