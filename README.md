@@ -69,12 +69,11 @@ retina_resnetfpn_coco
 └── exported_model                     # Stores exported model used for inference
 ```
 
-Since the augmentation is random, the results from each run will be different. I find that the mAP and validation loss won't improve much or not at all after around 4000 epochs.
-The best mAP is around 52%-58%
+Since the augmentation is random, the results from each run will be different. For the 5-6 runs, it seems that the mAP and validation loss won't improve much or not at all after around 4000 epochs. The best mAP is around 52%-58%. Below is the last training and evaluation results.
+It's clear that after aound 3500 epochs, the mAP, mAR and also validation loss do not improve much and even become worse. The model is likely overfitted, since this is quite a small dataset with 364 images. Though, indeed, the results could be improved, I decided to settle to the current model for now. I saved the checkpoint at 3500 epochs (the highest mAP) for inference.
 
-TODO: Add some images of training results
 
-![](results/APm.png) | ![](results/ARm.png) | ![](results/ARm.png)|
+![](results/APm.png) | ![](results/ARm.png) | ![](results/model_loss.png)|
 :------------------: | :------------------: | :------------------:|
 Mean Average Precison |  Mean Average Recall | Model Loss
 
