@@ -74,9 +74,9 @@ The best mAP is around 52%-58%
 
 TODO: Add some images of training results
 
-![](results/APm.svg) | ![](results/ARm.svg)|
-:------------------: | :------------------:
-Mean Average Precison |  Mean Average Recall
+![](results/APm.png) | ![](results/ARm.png) | ![](results/ARm.png)|
+:------------------: | :------------------: | :------------------:|
+Mean Average Precison |  Mean Average Recall | Model Loss
 
 ### 4. Inference:
 - Load the trained model weights.
