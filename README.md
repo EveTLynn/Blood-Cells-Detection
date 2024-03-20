@@ -3,7 +3,7 @@ This project implements fine-tuning of a RetinaNet model with a ResNet-50 backbo
 
 ## Project Overview
 This project is run on Colab free GPU with Tensorflow 2.15.0, it will take approximately 1 hour to run for 10,000 epochs. A copy of the notebook is available in this repository but since its size is too large for rendering on Github, please use [nbviewer](https://nbviewer.org/)
-or visit [this Colab link](https://colab.research.google.com/github/EveTLynn/Blood-Type-Detection/blob/main/Object_Detection_with_RetinaResnet_(TFM).ipynb). 
+or visit [this Colab link](https://colab.research.google.com/drive/1PsVqMfThRWEhOG1w2HDbs7OgICSIMd2d?usp=drive_link). 
 
 The notebook wil guide you through the following steps:
 
@@ -73,6 +73,10 @@ Since the augmentation is random, the results from each run will be different. I
 The best mAP is around 52%-58%
 
 TODO: Add some images of training results
+
+![](results/APm.svg) | ![](results/ARm.svg)|
+:------------------: | :------------------:
+Mean Average Precison |  Mean Average Recall
 
 ### 4. Inference:
 - Load the trained model weights.
