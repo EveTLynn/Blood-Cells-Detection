@@ -51,7 +51,7 @@ Leverage the TFM package to access the pre-trained RetinaNet model with a ResNet
 
 ### 3. Training and Evaluation
 - Train the fine-tuned model on the prepared TFRecord data.
-- Monitor training progress using TensorBoard: the Tensorboard read `events.out.tfevents` and visualize as charts, graphs, and images which can help us understand how the model is performing during training and diagnose any issues.
+- Monitor training progress using TensorBoard: the Tensorboard read `events.out.tfevents` and visualize as charts which can help us understand how the model is performing during training and diagnose any issues.
 - Evaluate the model's performance on a held-out validation set using [COCO detection evaluation metrics](https://cocodataset.org/#detection-eval), but as TF allow to export best model based on only one metric, I chose mean average precision for simplicity.
 - 5 newest models are saved by default and I also keep the model with the highest mAP (this will be used for inference later)
 
@@ -83,14 +83,14 @@ It's clear that after roughly 3500 epochs, the mAP, mAR and also validation loss
 Since the dataset size is relatively small, with only 364 images, overfitting is a potential concern. Though, indeed, the results could be improved, I decided to settle to the current model for now. I saved the checkpoint at 3500 epochs (the highest mAP) for generating predictions on new data.
 
 ### 4. Inference:
-- Load the [SavedModel](https://www.tensorflow.org/guide/saved_model) and its inference function 
+- Load the exported model in [SavedModel format](https://www.tensorflow.org/guide/saved_model) and its inference function. A copy of the exported model can be found [here](https://umpedu-my.sharepoint.com/:u:/g/personal/tklinh_duoc16_ump_edu_vn/ES0xi06qoRpCukdCUe4Z3cgBC3Xvn89cINeyj2BAxlBoeg?e=IimPm7).
 - Apply the model to detect blood cells on test set. The model will return 3 paramters:
   - `detection_boxes`: the coordinates of the bounding boxes
   - `detection_classes`: RBC, WBC or Platelets
   - `detection_scores`: from 0 to 1. This represents the model's certainty that the bounding box actually contains the predicted object class
 - Filter out the boxes that have detection_scores < 0.3 and count the number of cells for each blood type.
 
-Below are the visualization of the blood images from test set with their ground truth boxes and the images with the predicted boxes (confident score > 30%).
+Below are the visualization of the blood images from test set with their ground truth boxes and the images with the predicted boxes.
 
 ![](results/test_gt.png)  |
 :-------------------------:
@@ -102,15 +102,18 @@ Visualization of predicted bounding boxes
 
 The model actually detects the blood cells accurately despite not having very good mAP!   
 
-
+---
 **PS:** This project has been an incredible learning journey, and I couldn't have made it without the amazing Ms. Tyna as my mentor from the PyLadies Vienna Mentorship program! 
 Her support made this project a total joy to work on. Huge thanks for all the guidance and encouragement!
 
 **PPS: I'm Always Learning!**
 
-This repository is a work in progress, and I welcome your contributions! If you have any suggestions for improvement, feel free to open an issue or submit a pull request. I'm always looking for ways to enhance this project and make it more valuable for the community.
+This repository is a work in progress, and I welcome your contributions! If you have any suggestions for improvement, feel free to open an issue or submit a pull request. I'm always looking for ways to enhance this project and make it more valuable for the community. 
+
+(I haven't yet found way to implement Early Stopping with TFM which would help reduce wasted time for training. If anyone know how, I would appreciate of you could show me how😀)
 
 **PPPS: Thank you for reading this far =))**
+
 This project is inspired by getting rejected for donating blood, twice!! (I was low on RBC 🥲) Each time I had to wait for 30-45 minutes, I thoight to myself it would be great if they could make this process faster. 
 
-This project is for learning, and I hope you have fun reading it as much as when I wrote it😉.
+This project is for learning purpose, and I hope you have fun reading it as much as when I wrote it😉.
