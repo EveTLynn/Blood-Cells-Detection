@@ -81,13 +81,13 @@ It's clear that after roughly 3500 epochs, the mAP, mAR and also validation loss
 
 Since the dataset size is relatively small, with only 364 images, overfitting is a potential concern. Though, indeed, the results could be improved, I decided to settle to the current model for now. I saved the checkpoint at 3500 epochs (the highest mAP) for generating predictions on new data.
 
-### 4. Inference:
+### 4. Inference
 - Load the exported model in [SavedModel format](https://www.tensorflow.org/guide/saved_model) and its inference function. A copy of the exported model can be found [here](https://umpedu-my.sharepoint.com/:u:/g/personal/tklinh_duoc16_ump_edu_vn/ES0xi06qoRpCukdCUe4Z3cgBC3Xvn89cINeyj2BAxlBoeg?e=IimPm7).
 - Apply the model to detect blood cells on test set. The model will return 3 paramters:
   - `detection_boxes`: the coordinates of the bounding boxes
   - `detection_classes`: RBC, WBC or Platelets
   - `detection_scores`: from 0 to 1. This represents the model's certainty that the bounding box actually contains the predicted object class
-- Filter out the boxes that have `detection_scores` < 0.3 and count the number of cells for each blood type.
+- Filter out the boxes that have `detection_scores` < 0.3 and count the number of cells for each blood type
 
 Below are the visualization of the blood images from test set with their ground truth boxes and the images with the predicted boxes.
 
