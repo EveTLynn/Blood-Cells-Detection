@@ -8,7 +8,7 @@ or visit [this Colab link](https://colab.research.google.com/drive/1PsVqMfThRWEh
 The notebook wil guide you through the following steps:
 
 ### 1 . Data Preparation
-- Clone the BCCD dataset and this github repo for `custom_preprocessing.py`, `voc2coco.py`, and `labels.txt` scripts. The voc2coco scripts is from the [Roboflow github](https://github.com/roboflow/voc2coco) and a copy of it is stored in this repository for convenience.
+- Clone the [BCCD dataset](https://github.com/Shenggan/BCCD_Dataset) for the blood images and annaotations and this github repo for `custom_preprocessing.py`, `voc2coco.py`, and `labels.txt` scripts. The voc2coco scripts is from the [Roboflow github](https://github.com/roboflow/voc2coco) and a copy of it is stored in this repository for convenience.
 - Use functions from `custom_preprocessing.py` to split images and annotations to three separate folders: train, val, test
 - Augment images and annotations (random cropping, flipping, etc.) with Albumentations library, also utilize the functions from `custom_preprocessing.py`
 - Convert annotations from PASCAL VOC format to COCO format using `voc2coco.py` script
@@ -83,9 +83,11 @@ It's clear that after roughly 3500 epochs, the mAP, mAR and also validation loss
 Since the dataset size is relatively small, with only 364 images, overfitting is a potential concern. Though, indeed, the results could be improved, I decided to settle to the current model for now. I saved the checkpoint at 3500 epochs (the highest mAP) for generating predictions on new data.
 
 ### 4. Inference:
-- Load the trained model weights.
-- Apply the model to detect blood cells in new, unseen images. 
-- The model will output bounding boxes and class labels for identified cells with the counting for each blood cells type.
+- Load the [SavedModel](https://www.tensorflow.org/guide/saved_model) and its inference function 
+- Apply the model to detect blood cells in new, unseen images. The model will return 3 paramters: detection_boxes, detection_classes and detection_scores.
+- output bounding boxes and class labels for identified cells with the counting for each blood cells type.
+
+Below are the visualization of the blood images from test set with their ground truth boxes and the images with the predicted boxes (confident score > 30%).
 
 ![](results/test_gt.png)  |
 :-------------------------:
@@ -98,8 +100,8 @@ Visualization of predicted bounding boxes
 The model actually detects the blood cells accurately despite not having very good mAP!   
 
 <!---
-**PS:** This project has been an incredible learning journey, and I couldn't have made it without the amazing Ms. Tyna as my mentor from the PyLadies Vienna program! Her support made this project a total joy to work on.
-Huge thanks for all the support and guidance!
+**PS:** This project has been an incredible learning journey, and I couldn't have made it without the amazing Ms. Tyna as my mentor from the PyLadies Vienna Mentorship program! 
+Her support made this project a total joy to work on. Huge thanks for all the support and guidance!
 -->
 
 **PPS: I'm Always Learning!**
