@@ -10,7 +10,7 @@ The notebook wil guide you through the following steps:
 ### 1 . Data Preparation
 - Clone the [BCCD dataset](https://github.com/Shenggan/BCCD_Dataset) for the blood images and annaotations and this github repo for `custom_preprocessing.py`, `voc2coco.py`, and `labels.txt` scripts. The voc2coco scripts is from the [Roboflow github](https://github.com/roboflow/voc2coco) and a copy of it is stored in this repository for convenience.
 - Use functions from `custom_preprocessing.py` to split images and annotations to three separate folders: train, val, test
-- Augment images and annotations (random cropping, flipping, etc.) with Albumentations library, also utilize the functions from `custom_preprocessing.py`
+- Augment images and annotations (random cropping, flipping, etc.) with Albumentations library, also utilize the functions from `custom_preprocessing.py`. 
 - Convert annotations from PASCAL VOC format to COCO format using `voc2coco.py` script
 - Generate [TFRecords](https://www.tensorflow.org/tutorials/load_data/tfrecord) with `create_coco_tf_record.py` from TFM package, it is a TensorFlow simple format for storing a sequence of binary records.
 
@@ -84,8 +84,11 @@ Since the dataset size is relatively small, with only 364 images, overfitting is
 
 ### 4. Inference:
 - Load the [SavedModel](https://www.tensorflow.org/guide/saved_model) and its inference function 
-- Apply the model to detect blood cells in new, unseen images. The model will return 3 paramters: detection_boxes, detection_classes and detection_scores.
-- output bounding boxes and class labels for identified cells with the counting for each blood cells type.
+- Apply the model to detect blood cells on test set. The model will return 3 paramters:
+  - `detection_boxes`: the coordinates of the bounding boxes
+  - `detection_classes`: RBC, WBC or Platelets
+  - `detection_scores`: from 0 to 1. This represents the model's certainty that the bounding box actually contains the predicted object class
+- Filter out the boxes that have detection_scores < 0.3 and count the number of cells for each blood type.
 
 Below are the visualization of the blood images from test set with their ground truth boxes and the images with the predicted boxes (confident score > 30%).
 
@@ -99,11 +102,15 @@ Visualization of predicted bounding boxes
 
 The model actually detects the blood cells accurately despite not having very good mAP!   
 
-<!---
+
 **PS:** This project has been an incredible learning journey, and I couldn't have made it without the amazing Ms. Tyna as my mentor from the PyLadies Vienna Mentorship program! 
-Her support made this project a total joy to work on. Huge thanks for all the support and guidance!
--->
+Her support made this project a total joy to work on. Huge thanks for all the guidance and encouragement!
 
 **PPS: I'm Always Learning!**
 
 This repository is a work in progress, and I welcome your contributions! If you have any suggestions for improvement, feel free to open an issue or submit a pull request. I'm always looking for ways to enhance this project and make it more valuable for the community.
+
+**PPPS: Thank you for reading this far =))**
+This project is inspired by getting rejected for donating blood, twice!! (I was low on RBC 🥲) Each time I had to wait for 30-45 minutes, I thoight to myself it would be great if they could make this process faster. 
+
+This project is for learning, and I hope you have fun reading it as much as when I wrote it😉.
