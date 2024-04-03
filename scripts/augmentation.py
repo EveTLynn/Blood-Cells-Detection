@@ -5,6 +5,7 @@ import numpy as np
 import cv2
 import xml.etree.ElementTree as ET
 import albumentations as alb
+import argparse
 
 working_dir = './working_dir'
 def create_image_df(label_path: str) -> pd.DataFrame:
@@ -216,7 +217,7 @@ def augment_images(input_path: str,
   # Genrate a text file with all the image names (without the extension) for voc2coco script
   # Get a list of image file names (without extensions)
   image_folder = os.path.join(output_path, 'images')
-  files = os.listdir(image_folder)
+  # files = os.listdir(image_folder)
   image_files = [os.path.splitext(file)[0] for file in os.listdir(image_folder) if file.lower().endswith('.jpg')]
 
   # Write the file names to a text file
@@ -225,24 +226,29 @@ def augment_images(input_path: str,
           f.write(image_name + '\n')
   shutil.move("./filenames.txt", output_path)
 
-# define input_path
-input_train_path = os.path.join(working_dir, 'bccd_dataset', 'train')
-input_val_path = os.path.join(working_dir, 'bccd_dataset', 'val')
-input_test_path= os.path.join(working_dir, 'bccd_dataset', 'test')
+def main():
+  parser = argparse.ArgumentParser(
+    description="Augment images and annotations for object detection.")
+  parser.add_argument("--input_path", type=str, default=None, 
+                      help="Path to the input directory.")
+  parser.add_argument("--output_path", type=str, default=None, 
+                      help="Path to the output directory.")
+  parser.add_argument("--num_augmentations", type=int, default=3, 
+                      help="Number of augmentations to create.")
+  args = parser.parse_args()
+  # Check if input and output paths are provided
+  if args.input_path is None or args.output_path is None:
+      parser.error("Both input_path and output_path must be provided.")
+  if not os.path.exists(args.output_path):
+     os.makedirs(args.output_path)
+  
+  try:
+    # Augment images and annotations
+    augment_images(args.input_path, args.output_path, args.num_augmentations)
+    print("Augmentation completed successfully.")
+  except Exception as e:
+    print(f"An error occurred during augmentation: {e}")
 
-# define output paths
-aug_train_path = os.path.join(working_dir,'augmented_data', 'train')
-aug_val_path = os.path.join(working_dir,'augmented_data', 'val')
-aug_test_path = os.path.join(working_dir,'augmented_data', 'test')
 
-# Create output folders if they don't exist
-for folder_path in [aug_train_path, aug_val_path, aug_test_path]:
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
-
-
-# use the custom augmnetation function from custom_preprocess.py script
-num_aug = 10  # don't augment more than 10 images
-augment_images(input_path=input_train_path, output_path=aug_train_path, num_augmentations=num_aug)
-augment_images(input_path=input_val_path, output_path=aug_val_path, num_augmentations=num_aug)
-augment_images(input_path=input_test_path, output_path=aug_test_path, num_augmentations=num_aug)
+if __name__ == '__main__':
+  main()
