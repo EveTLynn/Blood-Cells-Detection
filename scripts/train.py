@@ -2,7 +2,6 @@ import os
 import matplotlib.pyplot as plt
 import subprocess
 import tensorflow as tf
-import pprint 
 # Import required libraries from tensorflow models
 import orbit
 import tensorflow_models as tfm
@@ -104,9 +103,6 @@ exp_config.trainer.optimizer_config.learning_rate.type = 'cosine'
 exp_config.trainer.optimizer_config.learning_rate.cosine.decay_steps = train_steps
 exp_config.trainer.optimizer_config.learning_rate.cosine.initial_learning_rate = 0.1
 exp_config.trainer.optimizer_config.warmup.linear.warmup_learning_rate = 0.05
-
-pp.pprint(exp_config.as_dict())
-display.Javascript('google.colab.output.setIframeHeight("500px");')
 
 ### Set up the distribution strategy
 if exp_config.runtime.mixed_precision_dtype == tf.float16:
