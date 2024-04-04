@@ -153,3 +153,13 @@ model, eval_logs = tfm.core.train_lib.run_experiment(
   model_dir=model_dir,
   run_post_eval=True)
 
+# use checkpoint_path = tf.train.latest_checkpoint(model_dir) for latest checkpoint
+best_ckpt_path = './working_dir/retinanet_resnetfpn_coco/trained_model/best_checkpoints'
+
+export_saved_model_lib.export_inference_graph(
+    input_type='image_tensor',
+    batch_size=1,
+    input_image_size=[HEIGHT, WIDTH],
+    params=exp_config,
+    checkpoint_path= best_ckpt_path,
+    export_dir=export_dir)
