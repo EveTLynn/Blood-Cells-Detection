@@ -15,13 +15,14 @@ from official.vision.dataloaders.tf_example_decoder import TfExampleDecoder
 
 # Define model name and paths
 model_name ='retinanet_resnetfpn_coco'
+working_dir = './working_dir'
 
-train_data_input_path = './augmented_data/bccd_coco_tfrecords/train-00000-of-00001.tfrecord'
-valid_data_input_path = './augmented_data/bccd_coco_tfrecords/valid-00000-of-00001.tfrecord'
-test_data_input_path = './augmented_data/bccd_coco_tfrecords/test-00000-of-00001.tfrecord'
-model_dir = os.path.join(model_name, 'trained_model')
-export_dir = os.path.join(model_name, 'exported_model')
-ckpt_path = os.path.join(model_name, 'base_ckpt')
+train_data_input_path = './working_dir/augmented_data/bccd_coco_tfrecords/train-00000-of-00001.tfrecord'
+valid_data_input_path = './working_dir/augmented_data/bccd_coco_tfrecords/valid-00000-of-00001.tfrecord'
+test_data_input_path = './working_dir/augmented_data/bccd_coco_tfrecords/test-00000-of-00001.tfrecord'
+model_dir = os.path.join(working_dir, model_name, 'trained_model')
+export_dir = os.path.join(working_dir, model_name, 'exported_model')
+ckpt_path = os.path.join(working_dir, model_name, 'base_ckpt')
 
 # get the model architecture
 exp_config = exp_factory.get_exp_config(model_name)
@@ -86,7 +87,7 @@ else:
   device = 'CPU'
 
 
-train_steps = 10000
+train_steps = 1000
 exp_config.trainer.steps_per_loop = 100 # steps_per_loop = num_of_training_examples // train_batch_size
 
 # the trainer by default will save the 5 lastest checkpoints
