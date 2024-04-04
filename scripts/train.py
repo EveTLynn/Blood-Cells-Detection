@@ -146,36 +146,12 @@ category_index={
 }
 tf_ex_decoder = TfExampleDecoder()
 
-# Helper function for visualizing the results from TFRecords.
-def show_batch(records, num_of_examples, cols=6, min_score_thresh=0.4):
-  # some hyperparameters
-  rows = num_of_examples//cols + 1
-  fig_height = rows*10 + (rows-1)*2
-  fig_width = cols*10 + (cols-1)*2
-  plt.figure(figsize=(fig_width, fig_height))
-  use_normalized_coordinates=True
-
-  # visualize predictions
-  for i, serialized_example in enumerate(records):
-    plt.subplot(rows, cols, i + 1)
-    decoded_tensors = tf_ex_decoder.decode(serialized_example)
-    image = decoded_tensors['image'].numpy().astype('uint8')
-    scores = np.ones(shape=(len(decoded_tensors['groundtruth_boxes'])))
-    visualization_utils.visualize_boxes_and_labels_on_image_array(
-        image,
-        decoded_tensors['groundtruth_boxes'].numpy(),
-        decoded_tensors['groundtruth_classes'].numpy().astype('int'),
-        scores,
-        category_index=category_index,
-        use_normalized_coordinates=use_normalized_coordinates,
-        max_boxes_to_draw=200,
-        min_score_thresh=min_score_thresh,
-        agnostic_mode=False,
-        instance_masks=None,
-        line_thickness=4)
-
-    plt.imshow(image)
-    plt.axis('off')
-    plt.title(f'Image-{i+1}', fontsize=30)
-  plt.show()
+# Run training and evaluation
+model, eval_logs = tfm.core.train_lib.run_experiment(
+  distribution_strategy=distribution_strategy,
+  task=task,
+  mode='train_and_eval',
+  params=exp_config,
+  model_dir=model_dir,
+  run_post_eval=True)
 
