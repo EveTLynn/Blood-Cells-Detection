@@ -151,7 +151,7 @@ def augment_images(input_path: str,
     input_path (str): Path to the directory containing the original images and annotations.
     output_path (str): Path to the directory where the augmented images and annotations will be saved.
     num_augmentations (int, optional): The number of augmented versions to create for each image. Defaults to 3.
-    ug_width (int, optional): Target width for resizing augmented images. Defaults to 256.
+    aug_width (int, optional): Target width for resizing augmented images. Defaults to 256.
     aug_height (int, optional): Target height for resizing augmented images. Defaults to 256.
   """
 
@@ -226,29 +226,51 @@ def augment_images(input_path: str,
           f.write(image_name + '\n')
   shutil.move("./filenames.txt", output_path)
 
+
 def main():
   parser = argparse.ArgumentParser(
-    description="Augment images and annotations for object detection.")
-  parser.add_argument("--input_path", type=str, default=None, 
+      description="Augment images and annotations for object detection.")
+  parser.add_argument("--input_path", type=str, default=None,
                       help="Path to the input directory.")
-  parser.add_argument("--output_path", type=str, default=None, 
+  parser.add_argument("--output_path", type=str, default=None,
                       help="Path to the output directory.")
-  parser.add_argument("--num_augmentations", type=int, default=3, 
+  parser.add_argument("--num_augmentations", type=int, default=3,
                       help="Number of augmentations to create.")
   args = parser.parse_args()
+
   # Check if input and output paths are provided
-  if args.input_path is None or args.output_path is None:
+  if None in [args.input_path, args.output_path]:
       parser.error("Both input_path and output_path must be provided.")
-  if not os.path.exists(args.output_path):
-     os.makedirs(args.output_path)
-  
+
+  # Create subfolders train, val, and test in the output path
+  train_output_path = os.path.join(args.output_path, 'train')
+  val_output_path = os.path.join(args.output_path, 'val')
+  test_output_path = os.path.join(args.output_path, 'test')
+  for folder_path in [train_output_path, val_output_path, test_output_path]:
+      if not os.path.exists(folder_path):
+          os.makedirs(folder_path)
+
+  # Perform augmentation for train set
   try:
-    # Augment images and annotations
-    augment_images(args.input_path, args.output_path, args.num_augmentations)
-    print("Augmentation completed successfully.")
+      augment_images(os.path.join(args.input_path, 'train'), train_output_path, args.num_augmentations)
+      print("Train set augmentation completed successfully.")
   except Exception as e:
-    print(f"An error occurred during augmentation: {e}")
+      print(f"An error occurred during train set augmentation: {e}")
+
+  # Perform augmentation for validation set
+  try:
+      augment_images(os.path.join(args.input_path, 'val'), val_output_path, args.num_augmentations)
+      print("Validation set augmentation completed successfully.")
+  except Exception as e:
+      print(f"An error occurred during validation set augmentation: {e}")
+
+  # Perform augmentation for test set
+  try:
+      augment_images(os.path.join(args.input_path, 'test'), test_output_path, args.num_augmentations)
+      print("Test set augmentation completed successfully.")
+  except Exception as e:
+      print(f"An error occurred during test set augmentation: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   main()
