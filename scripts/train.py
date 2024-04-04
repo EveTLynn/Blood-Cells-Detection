@@ -87,7 +87,7 @@ else:
   device = 'CPU'
 
 
-train_steps = 1000
+train_steps = 200
 exp_config.trainer.steps_per_loop = 100 # steps_per_loop = num_of_training_examples // train_batch_size
 
 # the trainer by default will save the 5 lastest checkpoints
