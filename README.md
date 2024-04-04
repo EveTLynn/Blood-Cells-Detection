@@ -16,7 +16,7 @@ The notebook wil guide you through the following steps:
 
 After this step the working directory will have a structure like below
 ```
-Blood-Cells-Detection
+working_dir
 ├── augmented_data                      # Augemented data
 │  ├── bccd_coco_tfrecords              # This folder contains tfrecords for train, val and test data 
 │  ├── test
@@ -33,10 +33,6 @@ Blood-Cells-Detection
 |            ├── annotations
 |            ├── images
 |            └── val.txt                # Names of the annotation files without the extension
-└── scripts
-        ├── custom_preprocessing.py     # A script to preprocess data for voc2coco script
-        |── labels.txt                  # A text file contain name of each blood type for encoding
-        └── voc2coco.py                 # A script to convert xml file to coco format
 ```
 
 ### 2. Model Configuration
