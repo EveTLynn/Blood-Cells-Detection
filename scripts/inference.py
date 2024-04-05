@@ -14,6 +14,23 @@ def build_inputs_for_object_detection(image, input_image_size):
       aug_scale_max=1.0)
   return image
 
+# Create category index dictionary to map the labels to coressponding label names.
+category_index={
+    1: {
+        'id': 1,
+        'name': 'RBC'
+       },
+    2: {
+        'id': 2,
+        'name': 'WBC'
+       },
+    3: {
+        'id': 3,
+        'name': 'Platelets'
+       }
+}
+tf_ex_decoder = TfExampleDecoder()
+
 # Helper function for visualizing the results from TFRecords.
 def show_batch(records, num_of_examples, cols=6, min_score_thresh=0.4):
   # some hyperparameters
@@ -61,23 +78,6 @@ test_ds = tf.data.TFRecordDataset(
     './working_dir/augmented_data/bccd_coco_tfrecords/test-00000-of-00001.tfrecord').take(
         num_of_examples)
 show_batch(test_ds, num_of_examples)
-
-# Create category index dictionary to map the labels to coressponding label names.
-category_index={
-    1: {
-        'id': 1,
-        'name': 'RBC'
-       },
-    2: {
-        'id': 2,
-        'name': 'WBC'
-       },
-    3: {
-        'id': 3,
-        'name': 'Platelets'
-       }
-}
-tf_ex_decoder = TfExampleDecoder()
 
 
 # some hyperparameters
