@@ -149,6 +149,6 @@ for i, serialized_example in enumerate(test_ds):
     plt.imshow(image_np)
     plt.title(f'Image-{i+1}. {count_text}', fontsize=30)
     plt.axis('off')
-  plt.savefig('inference_image.png')  # Save the image
+    plt.savefig('inference_image.png')  # Save the image
 
 plt.show()
