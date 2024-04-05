@@ -4,7 +4,6 @@ from official.vision.ops.preprocess_ops import resize_and_crop_image
 from official.vision.dataloaders.tf_example_decoder import TfExampleDecoder
 from official.vision.utils.object_detection import visualization_utils
 import numpy as np
-%matplotlib inline
 
 def build_inputs_for_object_detection(image, input_image_size):
   """Builds Object Detection model inputs for serving."""
