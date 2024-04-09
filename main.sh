@@ -1,40 +1,40 @@
 #!/bin/bash
 
 # split image and annotation
-python Blood-Cells-Detection/scripts/split_img_anno.py \
+python ./scripts/split_img_anno.py \
   --images_path ./BCCD_Dataset/BCCD/JPEGImages \
   --annotation_path ./BCCD_Dataset/BCCD/Annotations \
   --output_path ./working_dir/bccd_dataset 
 
 # augmentation
-python Blood-Cells-Detection/scripts/augmentation.py \
+python ./scripts/augmentation.py \
     --input_path ./working_dir/bccd_dataset \
     --output_path ./working_dir/augmented_data \
     --num_augmentations 10
 
 # Convert the annotions from PASCAL VOC to Coco format
 ## train
-python Blood-Cells-Detection/scripts/voc2coco.py \
-  --ann_dir working_dir/augmented_data/train/annotations \
-  --ann_ids working_dir/augmented_data/train/filenames.txt \
-  --labels Blood-Cells-Detection/scripts/labels.txt \
-  --output working_dir/augmented_data/train/train_cocoformat.json \
+python ./scripts/voc2coco.py \
+  --ann_dir ./working_dir/augmented_data/train/annotations \
+  --ann_ids ./working_dir/augmented_data/train/filenames.txt \
+  --labels ./scripts/labels.txt \
+  --output ./working_dir/augmented_data/train/train_cocoformat.json \
   --ext xml
 
 ## val
-python Blood-Cells-Detection/scripts/voc2coco.py \
-  --ann_dir working_dir/augmented_data/val/annotations \
-  --ann_ids working_dir/augmented_data/val/filenames.txt \
-  --labels Blood-Cells-Detection/scripts/labels.txt \
-  --output working_dir/augmented_data/val/val_cocoformat.json \
+python ./scripts/voc2coco.py \
+  --ann_dir ./working_dir/augmented_data/val/annotations \
+  --ann_ids ./working_dir/augmented_data/val/filenames.txt \
+  --labels ./scripts/labels.txt \
+  --output ./working_dir/augmented_data/val/val_cocoformat.json \
   --ext xml
 
 ## test
-python Blood-Cells-Detection/scripts/voc2coco.py \
-  --ann_dir working_dir/augmented_data/test/annotations \
-  --ann_ids working_dir/augmented_data/test/filenames.txt \
-  --labels Blood-Cells-Detection/scripts/labels.txt \
-  --output working_dir/augmented_data/test/test_cocoformat.json \
+python ./scripts/voc2coco.py \
+  --ann_dir ./working_dir/augmented_data/test/annotations \
+  --ann_ids ./working_dir/augmented_data/test/filenames.txt \
+  --labels ./scripts/labels.txt \
+  --output ./working_dir/augmented_data/test/test_cocoformat.json \
   --ext xml
 
 # generate tfrecords
@@ -72,4 +72,21 @@ python -m official.vision.data.create_coco_tf_record --logtostderr \
   --num_shards=1
 
 # train and evaluate
-python Blood-Cells-Detection/scripts/train.py
+python ./scripts/train.py \
+  --model_name=retinanet_resnetfpn_coco \
+  --working_dir=./working_dir \
+  --input_path=./working_dir/augmented_data/bccd_coco_tfrecords/ \
+  --checkpoint_url="https://storage.googleapis.com/tf_model_garden/vision/retinanet/retinanet-resnet50fpn.tar.gz" \
+  --HEIGHT=256 \
+  --WIDTH=256 \
+  --train_steps=1000 \
+  --ckpt_path=best_ckpt
+
+# run inference
+python ./scripts/inference.py \
+  --export_dir=./working_dir/retinanet_resnetfpn_coco/exported_model \
+  --test_ds_path=./working_dir/augmented_data/bccd_coco_tfrecords/test-00000-of-00001.tfrecord \
+  --number_of_images=18 \
+  --HEIGHT=256 \
+  --WIDTH=256 \
+  --min_score_thresh=0.4
