@@ -153,7 +153,6 @@ def visualize_predicted_boxes(export_dir: str, test_ds_path: str, num_of_example
 
     for i, serialized_example in enumerate(test_ds):
         plt.subplot(num_of_examples // cols + 1, cols, i + 1)
-        print(i)
         decoded_tensors = tf_ex_decoder.decode(serialized_example)
 
         image = build_inputs_for_object_detection(decoded_tensors['image'], input_image_size)
