@@ -38,7 +38,7 @@ def build_inputs_for_object_detection(image: tf.Tensor, input_image_size: int = 
 
     return image
 
-def visualize_results(test_ds: tf.data.Dataset, category_index: Dict[int, Dict], 
+def visualize_results(test_ds: tf.data.Dataset, category_index: dict[int, dict], 
                       tf_ex_decoder: TfExampleDecoder,
                       num_of_examples: int,  model_fn: tf.function = None,
                       visualize_ground_truth: bool = True, cols: int = 6,
