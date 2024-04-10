@@ -191,7 +191,12 @@ def import_and_run_inference(export_dir: str, test_ds_path: str, num_of_examples
         WIDTH: Target image width for pre-processing (default: 256).
         min_score_thresh: Minimum score threshold for visualization (default: 0.4).
     """
-
+    # Create category index dictionary for label to name mapping
+    category_index = {
+        1: {'id': 1, 'name': 'RBC'},
+        2: {'id': 2, 'name': 'WBC'},
+        3: {'id': 3, 'name': 'Platelets'}
+    }
     # Create TFRecord decoder
     tf_ex_decoder = TfExampleDecoder()
 
