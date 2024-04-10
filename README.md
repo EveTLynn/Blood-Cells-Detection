@@ -2,7 +2,7 @@
 This project implements fine-tuning of a RetinaNet model with a ResNet-50 backbone from the [TensorFlow Model Garden (TFM)](https://github.com/tensorflow/models) for detecting three types of blood cells (Red Blood Cells (RBCs), White Blood Cells (WBCs), and Platelets) in microscopic images from the [BCCD dataset](https://github.com/Shenggan/BCCD_Dataset).
 
 ## Project Overview
-This project was developed using Github Codespace and run on Colab free GPU with Tensorflow 2.16.0, it will take approximately 1 hour to run 10,000 epochs. For the colab notebook version, please visit [this link](https://colab.research.google.com/drive/1PsVqMfThRWEhOG1w2HDbs7OgICSIMd2d?usp=drive_link), for bash scipt version please visit [this link](TODO: add link) also run on Colab. (Huge appreciation for Google ;]] ) 
+This project was developed using Github Codespace and run on Colab free GPU with Tensorflow 2.16.0, it will take approximately 1 hour to run 10,000 epochs. For the colab notebook version, please visit [this link](https://colab.research.google.com/drive/1PsVqMfThRWEhOG1w2HDbs7OgICSIMd2d?usp=drive_link), for bash scipt version please visit [this link](https://colab.research.google.com/drive/1JZz1ii55jRZZt5148D4OIebGfxjJsKV_?usp=sharing) also run on Colab. (Huge appreciation for Google ;]] ) 
 
 ## Bash script version
 Make a copy of BCCD dataset and the script from this github repository.
@@ -15,12 +15,12 @@ For training on Colab
 pip install -U -q "tf-models-official"
 ```
 
-The next step is adding excute permission to the bash script and run it. The scripts will essentially do the following tasks:
-- Split the BCCD dataset into train, validation and test set
-- Augment images and annotation
-- Set up configuration
-- Train and evaluate
-- Export trained model in SavedModel format
+The next steps includes:
+- Split the BCCD dataset into train, validation and test set using `split_img_anno.py`
+- Augment images and annotation using `augmentation.py`
+- Set up configuration, Train and evaluate, Export trained model in SavedModel format using `train.py`
+The steps can be run seperatedly (the default arguments for the scripts have been set to fit this project, change as needed)
+All of those steps has been incorporate in `main.sh' script. To run the bash script, add excute permission run it as below.
 ```
 chmod u+x main.sh
 ./main.sh
