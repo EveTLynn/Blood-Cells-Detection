@@ -38,32 +38,26 @@ def build_inputs_for_object_detection(image: tf.Tensor, input_image_size: int = 
 
     return image
 
-def visualize_results(test_ds: tf.data.Dataset, category_index: dict[int, dict], 
-                      tf_ex_decoder: TfExampleDecoder,
-                      num_of_examples: int,  model_fn: tf.function = None,
-                      visualize_ground_truth: bool = True, cols: int = 6,
-                      min_score_thresh: float = 0.4,
-                      HEIGHT: int = 256, WIDTH: int = 256) -> None:
+def visualize_gt_boxes(test_ds_path: str, num_of_examples: int, cols: int = 6,
+                       min_score_thresh: float = 0.4, HEIGHT: int = 256, WIDTH: int = 256) -> None:
     """
-    Visualizes either ground truth bounding boxes or model predictions on images
-    from a TFRecord dataset.
-
-    This function iterates through a provided TFRecord dataset, decodes each
-    example. It then either visualizes the ground truth bounding boxes and class
-    labels (if `visualize_ground_truth` is True) or performs inference using the
-    provided model function and visualizes the predicted bounding boxes and class
-    labels (if `visualize_ground_truth` is False) on a grid layout using matplotlib.
-    Finally, it saves the resulting visualization as an image.
-
+    Visualizes ground truth bounding boxes and class labels on images from a TFRecord dataset.
+    
+    This function loads a TFRecord dataset containing ground truth information
+    (`test_ds_path`), decodes examples, and visualizes the ground truth bounding
+    boxes and class labels on a grid layout using matplotlib. It assumes the
+    dataset contains images and corresponding ground truth annotations (boxes and classes).
+    
     Args:
-        test_ds: A TFRecord dataset containing serialized examples.
-        category_index: A dictionary mapping class IDs to human-readable names.
-        tf_ex_decoder: A TfExampleDecoder instance for decoding TFRecords.
+        test_ds_path: Path to the test dataset in TFRecord format.
         num_of_examples: The number of examples to visualize from the dataset.
         cols: The number of columns in the grid layout for visualization (default: 6).
-        min_score_thresh: Minimum score threshold for visualization (default: 0.4).
-        visualize_ground_truth: Boolean flag indicating whether to visualize ground truth
-                                (True) or predictions (False).
+        min_score_thresh: Minimum score threshold for visualization (default: 0.4, not used here).
+        HEIGHT: Target image height for visualization (default: 256).
+        WIDTH: Target image width for visualization (default: 256).
+    
+    Returns:
+        None. This function saves the visualization as an image file ("ground_truth_image.png").
     """
     # Create category index dictionary for label to name mapping
     category_index = {
@@ -71,125 +65,67 @@ def visualize_results(test_ds: tf.data.Dataset, category_index: dict[int, dict],
         2: {'id': 2, 'name': 'WBC'},
         3: {'id': 3, 'name': 'Platelets'}
     }
+    
+    # Create TFRecord decoder
+    tf_ex_decoder = TfExampleDecoder()
 
-    # Calculate layout dimensions based on number of examples and columns
-    rows = num_of_examples // cols + 1
-    fig_height = rows * 10 + (rows - 1) * 2
+    # Load the test dataset (limited to specified number of examples)
+    test_ds = tf.data.TFRecordDataset(test_ds_path).take(num_of_examples)
+
+    rows = num_of_examples//cols + 1
+    fig_height = (num_of_examples // cols + 1) * 10 + ((num_of_examples // cols + 1) - 1) * 2
     fig_width = cols * 10 + (cols - 1) * 2
-    input_image_size = (HEIGHT, WIDTH)
+    figure = plt.figure(figsize=(fig_width, fig_height))
 
-    # Create a matplotlib figure with appropriate size
-    plt.figure(figsize=(fig_width, fig_height))
     use_normalized_coordinates = True
 
-    # Loop through each record in the dataset
+    # visualize predictions
     for i, serialized_example in enumerate(test_ds):
         plt.subplot(rows, cols, i + 1)
-        # Decode the serialized example
         decoded_tensors = tf_ex_decoder.decode(serialized_example)
+        image = decoded_tensors['image'].numpy().astype('uint8')
+        scores = np.ones(shape=(len(decoded_tensors['groundtruth_boxes'])))
+        visualization_utils.visualize_boxes_and_labels_on_image_array(
+            image,
+            decoded_tensors['groundtruth_boxes'].numpy(),
+            decoded_tensors['groundtruth_classes'].numpy().astype('int'),
+            scores,
+            category_index=category_index,
+            use_normalized_coordinates=use_normalized_coordinates,
+            max_boxes_to_draw=200,
+            min_score_thresh=min_score_thresh,
+            agnostic_mode=False,
+            instance_masks=None,
+            line_thickness=4)
+        plt.imshow(image)
+        plt.axis('off')
+        plt.title(f'Image-{i+1}', fontsize=30)
 
-        # Visualize ground truth or predictions based on the argument
-        if visualize_ground_truth:
-            image = decoded_tensors['image'].numpy().astype('uint8')
-            scores = np.ones(shape=(len(decoded_tensors['groundtruth_boxes'])))
-            visualization_utils.visualize_boxes_and_labels_on_image_array(
-                image,
-                decoded_tensors['groundtruth_boxes'].numpy(),
-                decoded_tensors['groundtruth_classes'].numpy().astype('int'),
-                scores,
-                category_index=category_index,
-                use_normalized_coordinates=use_normalized_coordinates,
-                max_boxes_to_draw=200,
-                min_score_thresh=min_score_thresh,
-                agnostic_mode=False,
-                instance_masks=None,
-                line_thickness=4)
-            plt.imshow(image)
-            plt.axis('off')
-            plt.title(f'Image-{i+1}', fontsize=30)
-        else:
-            image = build_inputs_for_object_detection(decoded_tensors['image'], input_image_size)
-            image = tf.expand_dims(image, axis=0)
-            image = tf.cast(image, dtype=tf.uint8)
-            image_np = image[0].numpy()
-            # predictions
-            result = model_fn(image)
-
-            # Get detections and scores
-            boxes = result['detection_boxes'][0].numpy()
-            classes = result['detection_classes'][0].numpy().astype(int)
-            scores = result['detection_scores'][0].numpy()
-
-            # Filter detections based on score threshold
-            filtered_boxes = boxes[scores >= min_score_thresh]
-            filtered_classes = classes[scores >= min_score_thresh]
-
-            # Count detections by category
-            category_counts = {}
-            for category in filtered_classes:
-                if category not in category_counts:
-                    category_counts[category] = 0
-                category_counts[category] += 1
-
-            # Generate count text based on category_index
-            count_text = ""
-            for category, count in category_counts.items():
-                label = category_index[category]['name']
-                count_text += f"{label}: {count}, "
-
-            # Truncate trailing comma and space
-            count_text = count_text[:-2]
-
-            # Visualize predictions
-            visualization_utils.visualize_boxes_and_labels_on_image_array(
-                image_np,
-                filtered_boxes,
-                filtered_classes,
-                scores,
-                category_index=category_index,
-                use_normalized_coordinates=False,
-                max_boxes_to_draw=200,
-                min_score_thresh=min_score_thresh,
-                agnostic_mode=False,
-                instance_masks=None,
-                line_thickness=4
-            )
-
-            # Display image and count text
-            plt.imshow(image_np)
-            plt.title(f'Image-{i+1}. {count_text}', fontsize=30)
-            plt.axis('off')
-
-    # Save the visualization as a PNG image
-    if visualize_ground_truth:
-        plt.savefig('ground_truth_image.png')
-    else:
-        plt.savefig('inference_image.png')
+    plt.savefig('ground_truth_image.png')
 
 
-def import_and_run_inference(export_dir: str, test_ds_path: str, num_of_examples: int,
-                             HEIGHT: int = 256, WIDTH: int = 256, min_score_thresh: float = 0.4) -> None:
+def visualize_predicted_boxes(export_dir: str, test_ds_path: str, num_of_examples: int,
+                             cols: int = 6, min_score_thresh: float = 0.4,
+                             HEIGHT: int = 256, WIDTH: int = 256) -> None:
     """
-    Imports a pre-trained object detection model, runs inference on a test dataset,
-    and visualizes both ground truth and predicted bounding boxes.
+    Visualizes predicted bounding boxes and class labels on images from a TFRecord dataset.
 
-    This function performs the following steps:
-
-    1. Creates a TfExampleDecoder instance for decoding TFRecords.
-    2. Loads the pre-trained object detection model from the provided export directory.
-    3. Retrieves the inference function ('serving_default') from the loaded SavedModel.
-    4. Creates a TFRecord dataset from the test dataset path and limits it to the specified number of examples.
-    5. Visualizes ground truth bounding boxes using the `visualize_results` function.
-    6. Runs inference using the loaded model and visualizes the predicted bounding boxes
-       using the `visualize_results` function.
+    This function loads a pre-trained object detection model from a saved model
+    directory (`export_dir`), decodes examples from a TFRecord dataset
+    (`test_ds_path`), performs inference using the loaded model, and visualizes
+    the predicted bounding boxes and class labels on a grid layout using matplotlib.
 
     Args:
-        export_dir: Path to the directory containing the exported SavedModel.
-        test_ds_path: Path to the TFRecord dataset containing test images.
+        export_dir: Path to the directory containing the exported saved model.
+        test_ds_path: Path to the test dataset in TFRecord format.
         num_of_examples: The number of examples to visualize from the dataset.
+        cols: The number of columns in the grid layout for visualization (default: 6).
+        min_score_thresh: Minimum score threshold for visualization (default: 0.4).
         HEIGHT: Target image height for pre-processing (default: 256).
         WIDTH: Target image width for pre-processing (default: 256).
-        min_score_thresh: Minimum score threshold for visualization (default: 0.4).
+
+    Returns:
+        None. This function saves the visualization as an image file ("inference_image.png").
     """
     # Create category index dictionary for label to name mapping
     category_index = {
@@ -207,12 +143,65 @@ def import_and_run_inference(export_dir: str, test_ds_path: str, num_of_examples
     # Load the test dataset (limited to specified number of examples)
     test_ds = tf.data.TFRecordDataset(test_ds_path).take(num_of_examples)
 
-    # visualize ground truth boxes
-    gt_test_ds = test_ds
-    visualize_results(gt_test_ds, category_index, tf_ex_decoder, num_of_examples, visualize_ground_truth=True)
+    # calculate figure height and width
+    fig_height = (num_of_examples // cols + 1) * 10 + ((num_of_examples // cols + 1) - 1) * 2
+    fig_width = cols * 10 + (cols - 1) * 2
+    figure = plt.figure(figsize=(fig_width, fig_height))
 
-    # Visualize inference (call repeat to create a new iterator)
-    visualize_results(test_ds.repeat(), category_index, tf_ex_decoder, num_of_examples, model_fn, visualize_ground_truth=False)
+    use_normalized_coordinates = False
+    input_image_size = (HEIGHT, WIDTH)
+
+    for i, serialized_example in enumerate(test_ds):
+        plt.subplot(num_of_examples // cols + 1, cols, i + 1)
+        print(i)
+        decoded_tensors = tf_ex_decoder.decode(serialized_example)
+
+        image = build_inputs_for_object_detection(decoded_tensors['image'], input_image_size)
+        image = tf.expand_dims(image, axis=0)
+        image = tf.cast(image, dtype=tf.uint8)
+        image_np = image[0].numpy()
+
+        result = model_fn(image)
+
+        boxes = result['detection_boxes'][0].numpy()
+        classes = result['detection_classes'][0].numpy().astype(int)
+        scores = result['detection_scores'][0].numpy()
+
+        filtered_boxes = boxes[scores >= min_score_thresh]
+        filtered_classes = classes[scores >= min_score_thresh]
+
+        category_counts = {}
+        for category in filtered_classes:
+            if category not in category_counts:
+                category_counts[category] = 0
+            category_counts[category] += 1
+
+        count_text = ""
+        for category, count in category_counts.items():
+            label = category_index[category]['name']
+            count_text += f"{label}: {count}, "
+
+        count_text = count_text[:-2]
+
+        visualization_utils.visualize_boxes_and_labels_on_image_array(
+            image_np,
+            filtered_boxes,
+            filtered_classes,
+            scores,
+            category_index=category_index,
+            use_normalized_coordinates=use_normalized_coordinates,
+            max_boxes_to_draw=200,
+            min_score_thresh=min_score_thresh,
+            agnostic_mode=False,
+            instance_masks=None,
+            line_thickness=4
+        )
+
+        plt.imshow(image_np)
+        plt.title(f'Image-{i+1}. {count_text}', fontsize=30)
+        plt.axis('off')
+
+    plt.savefig('inference_image.png')
 
 def main():
     """
@@ -223,19 +212,25 @@ def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--export_dir', type=str, default='./working_dir/retinanet_resnetfpn_coco/exported_model',
-                        help='Directory to save the exported model.')
+                        help='Directory containing the exported model.')
     parser.add_argument('--test_ds_path', type=str, default='./working_dir/augmented_data/bccd_coco_tfrecords/test-00000-of-00001.tfrecord',
                         help='Path to the test dataset in TFRecord format.')
-    parser.add_argument('--number_of_images', type=int, default=18,
+    parser.add_argument('--num_of_examples', type=int, default=18,
                         help='Number of images to visualize.')
-    parser.add_argument('--HEIGHT', type=int, default=256)
-    parser.add_argument('--WIDTH', type=int, default=256)
-    parser.add_argument('--min_score_thresh', type=float, default=0.4)
+    parser.add_argument('--min_score_thresh', type=float, default=0.4,
+                        help='Minimum score threshold for visualization.')
+    parser.add_argument('--HEIGHT', type=int, default=256,
+                        help='Height of the input images for preprocessing.')
+    parser.add_argument('--WIDTH', type=int, default=256,
+                        help='Width of the input images for preprocessing.')
 
     args = parser.parse_args()
 
     # Run inference and visualization
-    import_and_run_inference(args.export_dir, args.test_ds_path, args.number_of_images, args.HEIGHT, args.WIDTH, args.min_score_thresh)
+    visualize_gt_boxes(args.test_ds_path, num_of_examples=args.num_of_examples,
+                       min_score_thresh=args.min_score_thresh, HEIGHT=args.HEIGHT, WIDTH=args.WIDTH)
+    visualize_predicted_boxes(args.export_dir, args.test_ds_path, num_of_examples=args.num_of_examples,
+                              min_score_thresh=args.min_score_thresh, HEIGHT=args.HEIGHT, WIDTH=args.WIDTH)
 
 
 if __name__ == '__main__':
