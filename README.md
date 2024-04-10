@@ -2,8 +2,34 @@
 This project implements fine-tuning of a RetinaNet model with a ResNet-50 backbone from the [TensorFlow Model Garden (TFM)](https://github.com/tensorflow/models) for detecting three types of blood cells (Red Blood Cells (RBCs), White Blood Cells (WBCs), and Platelets) in microscopic images from the [BCCD dataset](https://github.com/Shenggan/BCCD_Dataset).
 
 ## Project Overview
-This project was run on Colab free GPU with Tensorflow 2.15.0, it will take approximately 1 hour to run 10,000 epochs. A copy of the notebook is available in this repository but since its size is too large for rendering on Github, please use [nbviewer](https://nbviewer.org/)
-or visit [this Colab link](https://colab.research.google.com/drive/1PsVqMfThRWEhOG1w2HDbs7OgICSIMd2d?usp=drive_link). 
+This project was developed using Github Codespace and run on Colab free GPU with Tensorflow 2.16.0, it will take approximately 1 hour to run 10,000 epochs. For the colab notebook version, please visit [this link](https://colab.research.google.com/drive/1PsVqMfThRWEhOG1w2HDbs7OgICSIMd2d?usp=drive_link), for bash scipt version please visit [this link](TODO: add link) also run on Colab. (Huge appreciation for Google ;]] ) 
+
+## Bash script version
+Make a copy of BCCD dataset and the script from this github repository.
+```
+git clone https://github.com/Shenggan/BCCD_Dataset
+git clone -b add_bash_scripts --single-branch https://github.com/EveTLynn/Blood-Cells-Detection
+```
+For training on Colab
+```
+pip install -U -q "tf-models-official"
+```
+
+The next step is adding excute permission to the bash script and run it. The scripts will essentially do the following tasks:
+- Split the BCCD dataset into train, validation and test set
+- Augment images and annotation
+- Set up configuration
+- Train and evaluate
+- Export trained model in SavedModel format
+```
+chmod u+x main.sh
+./main.sh
+```
+The final step is to run inference on test set. The test data need to be in TFRecord format. Specify the number of images for inference and the script will return one images of all ground truth boxes and one imeges of predicted boxes. 
+```
+python ./scripts/inference.py 
+```
+## Notebook version
 
 The notebook wil guide you through the following steps:
 
