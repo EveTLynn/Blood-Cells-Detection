@@ -65,6 +65,12 @@ def visualize_results(test_ds: tf.data.Dataset, category_index: dict[int, dict],
         visualize_ground_truth: Boolean flag indicating whether to visualize ground truth
                                 (True) or predictions (False).
     """
+    # Create category index dictionary for label to name mapping
+    category_index = {
+        1: {'id': 1, 'name': 'RBC'},
+        2: {'id': 2, 'name': 'WBC'},
+        3: {'id': 3, 'name': 'Platelets'}
+    }
 
     # Calculate layout dimensions based on number of examples and columns
     rows = num_of_examples // cols + 1
@@ -169,13 +175,12 @@ def import_and_run_inference(export_dir: str, test_ds_path: str, num_of_examples
 
     This function performs the following steps:
 
-    1. Loads a category index dictionary to map class labels to human-readable names.
-    2. Creates a TfExampleDecoder instance for decoding TFRecords.
-    3. Loads the pre-trained object detection model from the provided export directory.
-    4. Retrieves the inference function ('serving_default') from the loaded SavedModel.
-    5. Creates a TFRecord dataset from the test dataset path and limits it to the specified number of examples.
-    6. Visualizes ground truth bounding boxes using the `visualize_results` function.
-    7. Runs inference using the loaded model and visualizes the predicted bounding boxes
+    1. Creates a TfExampleDecoder instance for decoding TFRecords.
+    2. Loads the pre-trained object detection model from the provided export directory.
+    3. Retrieves the inference function ('serving_default') from the loaded SavedModel.
+    4. Creates a TFRecord dataset from the test dataset path and limits it to the specified number of examples.
+    5. Visualizes ground truth bounding boxes using the `visualize_results` function.
+    6. Runs inference using the loaded model and visualizes the predicted bounding boxes
        using the `visualize_results` function.
 
     Args:
@@ -186,13 +191,6 @@ def import_and_run_inference(export_dir: str, test_ds_path: str, num_of_examples
         WIDTH: Target image width for pre-processing (default: 256).
         min_score_thresh: Minimum score threshold for visualization (default: 0.4).
     """
-
-    # Create category index dictionary for label to name mapping
-    category_index = {
-        1: {'id': 1, 'name': 'RBC'},
-        2: {'id': 2, 'name': 'WBC'},
-        3: {'id': 3, 'name': 'Platelets'}
-    }
 
     # Create TFRecord decoder
     tf_ex_decoder = TfExampleDecoder()
@@ -205,7 +203,8 @@ def import_and_run_inference(export_dir: str, test_ds_path: str, num_of_examples
     test_ds = tf.data.TFRecordDataset(test_ds_path).take(num_of_examples)
 
     # visualize ground truth boxes
-    visualize_results(test_ds, category_index, tf_ex_decoder, num_of_examples, visualize_ground_truth=True)
+    gt_test_ds = test_ds
+    visualize_results(gt_test_ds, category_index, tf_ex_decoder, num_of_examples, visualize_ground_truth=True)
 
     # Visualize inference (call repeat to create a new iterator)
     visualize_results(test_ds.repeat(), category_index, tf_ex_decoder, num_of_examples, model_fn, visualize_ground_truth=False)
