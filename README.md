@@ -39,13 +39,13 @@ The next steps includes:
 - Set up configuration, Train and evaluate, Export trained model in SavedModel format using `train.py`
 
 The steps can be run seperatedly (the default arguments for the scripts have been set to fit this project, change as needed) by simply call `python script_name.py` to run the script with default values.
-Or using the `main.sh' script which incorporate all the steps. To run the bash script, add excute permission run it as below.
+Or using the `main.sh` script which incorporate all the steps. To run the bash script, add excute permission and run it as below.
 ```
 chmod u+x main.sh
 ./main.sh
 ```
 ### 4. Inference
-The final step is to run inference on test set with `inference.py`. The test data need to be in TFRecord format. Specify the number of examples per image for inference, and the script will return one images of all ground truth boxes and one images of all predicted boxes inferenced by the SavedModel. 
+The final step is to run inference on test set with `inference.py`. The test data need to be in TFRecord format. Specify the number of examples per image for inference, and the script will return one image of all ground truth boxes and one image of all predicted boxes inferenced by the SavedModel. 
 ```
 python ./scripts/inference.py --num_of_examples=18
 ```
@@ -56,7 +56,7 @@ For more details on what each script does, please read the notebook version belo
 The notebook wil guide you through the following steps:
 
 ### 1 . Data Preparation
-For convenience, the split and augmentation scripts are incoporated into `custom_preprocessing.py` and import to the notebook as methods.
+For convenience, the split and augmentation scripts are incoporated into `custom_preprocessing.py` and import to the notebook as functions.
 
 - Clone the [BCCD dataset](https://github.com/Shenggan/BCCD_Dataset) for the blood images and annotations and this github repo for `custom_preprocessing.py`, `voc2coco.py`, and `labels.txt` scripts. The voc2coco scripts is from the [Roboflow github](https://github.com/roboflow/voc2coco) and a copy of it is stored in this repository for convenience.
 - Use functions from `custom_preprocessing.py` to split images and annotations to three separate folders: train, val, test
@@ -148,10 +148,10 @@ Visualization of predicted bounding boxes
 The model actually detects the blood cells accurately despite not having very good mAP!   
 
 ---
-**PS:** This project has been an incredible learning journey, and I couldn't have made it without the amazing Ms. Tyna as my mentor from the PyLadies Vienna Mentorship program! 
+**PS:** This project has been an incredible learning journey, and I couldn't have made it without the amazing Ms. Tyna as my mentor from the [PyLadies Vienna Mentorship program](https://pyladies.at/)! 
 Her support made this project a total joy to work on. Huge thanks for all the guidance and encouragement!
 
-Also thanks to my friend who told me to learn bash scripting. I'm now less scared of the blinking dollar sign😅.
+Also, thanks to my friend who told me to learn bash scripting. I'm now less scared of the blinking dollar sign 😅.
 
 **PPS: I'm Always Learning!**
 
