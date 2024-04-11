@@ -1,39 +1,63 @@
 # Blood Cells Detection on BCCD Dataset
-This project implements fine-tuning of a RetinaNet model with a ResNet-50 backbone from the [TensorFlow Model Garden (TFM)](https://github.com/tensorflow/models) for detecting three types of blood cells (Red Blood Cells (RBCs), White Blood Cells (WBCs), and Platelets) in microscopic images from the [BCCD dataset](https://github.com/Shenggan/BCCD_Dataset).
+The project fine-tune a RetinaNet model with a ResNet-50 backbone from the [TensorFlow Model Garden (TFM)](https://github.com/tensorflow/models) for detecting three types of blood cells (Red Blood Cells (RBCs), White Blood Cells (WBCs), and Platelets) in microscopic images from the [BCCD dataset](https://github.com/Shenggan/BCCD_Dataset).
 
 ## Project Overview
-This project was developed using Github Codespace and run on Colab free GPU with Tensorflow 2.16.0, it will take approximately 1 hour to run 10,000 epochs. For the colab notebook version, please visit [this link](https://colab.research.google.com/drive/1PsVqMfThRWEhOG1w2HDbs7OgICSIMd2d?usp=drive_link), for bash scipt version please visit [this link](https://colab.research.google.com/drive/1JZz1ii55jRZZt5148D4OIebGfxjJsKV_?usp=sharing) also run on Colab. (Huge appreciation for Google ;]] ) 
+While on a quest to join the ranks of blood donors (unfortunately, my red blood cell count, or RBCs, had other plans – shoutout to iron supplements!), I encountered a familiar foe: the lengthy wait times after deferral. Those 30-45 minute delays sparked this project!
+
+Built with the help of Github Codespace and powered by Colab's free GPU with TensorFlow 2.16.0, it takes about an hour to train for 10,000 epochs. 
+For the colab notebook version, visit [this link](https://colab.research.google.com/drive/1PsVqMfThRWEhOG1w2HDbs7OgICSIMd2d?usp=drive_link), for bash script version visit [this link](https://colab.research.google.com/drive/1JZz1ii55jRZZt5148D4OIebGfxjJsKV_?usp=sharing), also run on Colab. 
+
+(Huge appreciation for Google!! 😉) 
 
 ## Bash script version
-Make a copy of BCCD dataset and the script from this github repository.
+### 1. Make a copy of BCCD dataset and the script from this github repository.
 ```
 git clone https://github.com/Shenggan/BCCD_Dataset
+cd Blood-Cells-Detection
 git clone -b add_bash_scripts --single-branch https://github.com/EveTLynn/Blood-Cells-Detection
 ```
-For training on Colab
+### 2. Install packages
+For training on Colab. Colab pretty much pre-installed everything, only need to install the Tensorflow Model API.
 ```
 pip install -U -q "tf-models-official"
 ```
+Some other packages might need to be installed if not training on Colab
+```
+pip install albumentations pandas tqdm
+pip install opencv-python opencv-python-headless
 
+# if can't import cv2:  install libgl1-mesa-glx package which contains the OpenGL library
+sudo apt-get update
+sudo apt-get install libgl1-mesa-glx
+```
+### 3. Split; Augment data; Convert annotations to COCO format; Generate TFRecords; Train and Evaluate
 The next steps includes:
 - Split the BCCD dataset into train, validation and test set using `split_img_anno.py`
 - Augment images and annotation using `augmentation.py`
+- Convert annotations from PASCAL VOC format to COCO format using `voc2coco.py`
+- Generate TFRecords using `create_coco_tf_record.py` from [TFM official vision github](https://github.com/tensorflow/models/blob/master/official/vision/data/create_coco_tf_record.py)
 - Set up configuration, Train and evaluate, Export trained model in SavedModel format using `train.py`
-The steps can be run seperatedly (the default arguments for the scripts have been set to fit this project, change as needed)
-All of those steps has been incorporate in `main.sh' script. To run the bash script, add excute permission run it as below.
+
+The steps can be run seperatedly (the default arguments for the scripts have been set to fit this project, change as needed) by simply call `python script_name.py` to run the script with default values.
+Or using the `main.sh' script which incorporate all the steps. To run the bash script, add excute permission run it as below.
 ```
 chmod u+x main.sh
 ./main.sh
 ```
-The final step is to run inference on test set. The test data need to be in TFRecord format. Specify the number of images for inference and the script will return one images of all ground truth boxes and one imeges of predicted boxes. 
+### 4. Inference
+The final step is to run inference on test set with `inference.py`. The test data need to be in TFRecord format. Specify the number of examples per image for inference, and the script will return one images of all ground truth boxes and one images of all predicted boxes inferenced by the SavedModel. 
 ```
-python ./scripts/inference.py 
+python ./scripts/inference.py --num_of_examples=18
 ```
+For more details on what each script does, please read the notebook version below.
+
 ## Notebook version
 
 The notebook wil guide you through the following steps:
 
 ### 1 . Data Preparation
+For convenience, the split and augmentation scripts are incoporated into `custom_preprocessing.py` and import to the notebook as methods.
+
 - Clone the [BCCD dataset](https://github.com/Shenggan/BCCD_Dataset) for the blood images and annotations and this github repo for `custom_preprocessing.py`, `voc2coco.py`, and `labels.txt` scripts. The voc2coco scripts is from the [Roboflow github](https://github.com/roboflow/voc2coco) and a copy of it is stored in this repository for convenience.
 - Use functions from `custom_preprocessing.py` to split images and annotations to three separate folders: train, val, test
 - Augment images and annotations (random cropping, flipping, etc.) with Albumentations library, also utilize the functions from `custom_preprocessing.py`. 
@@ -127,6 +151,8 @@ The model actually detects the blood cells accurately despite not having very go
 **PS:** This project has been an incredible learning journey, and I couldn't have made it without the amazing Ms. Tyna as my mentor from the PyLadies Vienna Mentorship program! 
 Her support made this project a total joy to work on. Huge thanks for all the guidance and encouragement!
 
+Also thanks to my friend who told me to learn bash scripting. I'm now less scared of the blinking dollar sign😅.
+
 **PPS: I'm Always Learning!**
 
 This repository is a work in progress, and I welcome your contributions! If you have any suggestions for improvement, feel free to open an issue or submit a pull request. I'm always looking for ways to enhance this project and make it more valuable for the community. 
@@ -135,6 +161,4 @@ This repository is a work in progress, and I welcome your contributions! If you 
 
 **PPPS: Thank you for reading this far =))**
 
-This project is inspired by getting rejected for donating blood, twice!! (I was low on RBC 🥲) And each time I had to wait for 30-45 minutes, I thought to myself it would be great if they could make this process faster. 
-
-This project is for learning purpose. I hope you have fun reading it as much as when I wrote it😉.
+This project is for learning purpose. I hope you have fun reading it as much as when I wrote this😉.
