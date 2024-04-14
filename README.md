@@ -1,11 +1,11 @@
 # Blood Cells Detection on BCCD Dataset
-The project fine-tune a RetinaNet model with a ResNet-50 backbone from the [TensorFlow Model Garden (TFM)](https://github.com/tensorflow/models) for detecting three types of blood cells (Red Blood Cells (RBCs), White Blood Cells (WBCs), and Platelets) in microscopic images from the [BCCD dataset](https://github.com/Shenggan/BCCD_Dataset).
+The project fine-tuned a RetinaNet model with a ResNet-50 backbone from the [TensorFlow Model Garden (TFM)](https://github.com/tensorflow/models) for detecting three types of blood cells (Red Blood Cells (RBCs), White Blood Cells (WBCs), and Platelets) in microscopic images from the [BCCD dataset](https://github.com/Shenggan/BCCD_Dataset).
 
 ## Project Overview
 While on a quest to join the ranks of blood donors (unfortunately, my red blood cell count, or RBCs, had other plans – shoutout to iron supplements!), I encountered a familiar foe: the lengthy wait times after deferral. Those 30-45 minute delays sparked this project!
 
 Built with the help of Github Codespace and powered by Colab's free GPU with TensorFlow 2.16.0, it takes about an hour to train for 10,000 epochs. 
-For the colab notebook version, visit [this link](https://colab.research.google.com/drive/1PsVqMfThRWEhOG1w2HDbs7OgICSIMd2d?usp=drive_link), for bash script version visit [this link](https://colab.research.google.com/drive/1JZz1ii55jRZZt5148D4OIebGfxjJsKV_?usp=sharing), also run on Colab. 
+There're two versions: [Colab notebook](https://colab.research.google.com/drive/1PsVqMfThRWEhOG1w2HDbs7OgICSIMd2d?usp=drive_link), and [Bash script](https://colab.research.google.com/drive/1JZz1ii55jRZZt5148D4OIebGfxjJsKV_?usp=sharing) which also run on Colab. 
 
 (Huge appreciation for Google!! 😉) 
 
@@ -17,7 +17,7 @@ cd Blood-Cells-Detection
 git clone -b add_bash_scripts --single-branch https://github.com/EveTLynn/Blood-Cells-Detection
 ```
 ### 2. Install packages
-For training on Colab. Colab pretty much pre-installed everything, only need to install the Tensorflow Model API.
+Colab pretty much pre-installed everything, for training on Colab, only need to install the Tensorflow Model API.
 ```
 pip install -U -q "tf-models-official"
 ```
@@ -34,7 +34,7 @@ sudo apt-get install libgl1-mesa-glx
 The next steps includes:
 - Split the BCCD dataset into train, validation and test set using `split_img_anno.py`
 - Augment images and annotation using `augmentation.py`
-- Convert annotations from PASCAL VOC format to COCO format using `voc2coco.py`
+- Convert annotations from PASCAL VOC format to COCO format using `voc2coco.py` from [Roboflow github](https://github.com/roboflow/voc2coco)
 - Generate TFRecords using `create_coco_tf_record.py` from [TFM official vision github](https://github.com/tensorflow/models/blob/master/official/vision/data/create_coco_tf_record.py)
 - Set up configuration, Train and evaluate, Export trained model in SavedModel format using `train.py`
 
