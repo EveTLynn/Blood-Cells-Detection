@@ -79,5 +79,5 @@ python ./scripts/train.py \
   --checkpoint_url="https://storage.googleapis.com/tf_model_garden/vision/retinanet/retinanet-resnet50fpn.tar.gz" \
   --HEIGHT=256 \
   --WIDTH=256 \
-  --train_steps=1000 \
+  --train_steps=3000 \
   --ckpt_path=best_ckpt
