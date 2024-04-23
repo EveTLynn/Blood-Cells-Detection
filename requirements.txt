@@ -1,0 +1,10 @@
+tensorflow=2.16.1
+tensorboard=2.16.2
+tf-models-official=2.16.0
+opencv-python=4.9.0.80
+opencv-python-headless=4.9.0.80
+albumentations=1.4.3
+pandas=2.2.1
+tqdm=4.66.2
+numpy=1.26.4
+
